@@ -1,0 +1,63 @@
+name: 'AWS Amplify CI/CD'
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+    branches:
+      - master
+
+jobs:
+  build_and_deploy_job:
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
+    runs-on: ubuntu-latest
+    name: Build and Deploy Job
+
+    strategy:
+      matrix:
+        node-version: [12.x]
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      # Optional: Github Organization/Scoped private npm packages
+      - name: Configure Github Private Packages
+        id: gitpackages
+        uses: actions/setup-node@v2-beta
+        with:
+          node-version: ${{ matrix.node-version }}
+          registry-url: 'https://npm.pkg.github.com/'
+          # Required: Set github org/namespace
+          scope: '@namespace'
+          always-auth: true
+          token: ${{ secrets.PACKAGES_TOKEN }}
+
+      - name: Configure Amplify Instance
+        uses: ambientlight/amplify-cli-action@0.2.1
+        with:
+          amplify_command: configure
+          amplify_env: 'dev'
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: us-east-1
+
+      - name: Resolve Dependencies and Build Output
+        id: deps
+        run: yarn && yarn build
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.PACKAGES_TOKEN }}
+
+      - name: Deploy Output to AWS Amplify
+        uses: ambientlight/amplify-cli-action@0.2.1
+        with:
+          amplify_command: publish
+          amplify_env: 'dev'
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: us-east-1
