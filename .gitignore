@@ -1,0 +1,16 @@
+# --------------------------------
+# GITIGNORE: Exclude Build Files
+# --------------------------------
+
+# Build Dependencies Output
+/node_modules/
+/build/
+/public/
+/.cache/
+
+# IDE preferences
+/.vscode/
+/.idea/
+
+# Securables
+.seed
