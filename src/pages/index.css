@@ -1,0 +1,12 @@
+/**
+* Default style overrides
+ */
+
+body {
+    margin: 0;
+    overflow: hidden;
+    font-family: 'Comfortaa', 'Open Sans', 'Ubuntu', 'Segoe UI', 'Helvetica', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
